@@ -4,10 +4,6 @@
 
 Peer-to-peer video and voice calls from the terminal. Video can appear as ASCII, colored Unicode art, or a native terminal image.
 
-![Two participants rendered as colored Fun ASCII in Glyph Call](docs/media/call-demo.gif)
-
-*Fun ASCII preview generated from dual-pane test footage (live-action source, character output only).*
-
 ## Quick start
 
 Install Go 1.26 or newer. Camera and microphone capture require macOS 14 or newer and Apple's Command Line Tools (`xcode-select --install`).
@@ -40,9 +36,23 @@ Choose **Host a call** to generate an invite code. Share it privately and have t
 | **Fun** | Colored Braille by default. Use `--fun-style ascii` for colored ASCII. |
 | **Graphic** | Camera images in compatible terminals such as Kitty and iTerm2. Each receiver falls back to character art if image support is unavailable. |
 
-![Same test frame in Hidden, Fun ASCII, and Fun Unicode character modes](docs/media/video-modes.png)
+The clips below are the same dual-pane call preview through each character mode (YOU | PEER). Source footage is converted with `media.MakeFrame`; the camera image itself is not shown.
 
-![Animated characters rendered as colored Fun ASCII in Glyph Call](docs/media/animated-demo.gif)
+**Hidden**
+
+![Call preview in Hidden mode](docs/media/mode-hidden.gif)
+
+**Fun ASCII** (`--mode fun --fun-style ascii`)
+
+![Call preview in Fun ASCII mode](docs/media/mode-fun-ascii.gif)
+
+**Fun Unicode** (`--mode fun --fun-style unicode`)
+
+![Call preview in Fun Unicode mode](docs/media/mode-fun-unicode.gif)
+
+**Fun Unicode** with the animated-character test clip:
+
+![Animated call preview in Fun Unicode mode](docs/media/mode-fun-unicode-animated.gif)
 
 Use `--voice real`, `robot`, `8bit`, `radio`, or `off`. The host requests a voice mode and quality, and the peers negotiate what they support. Use `--no-camera` or `--no-audio` to disable a local device. Run `./bin/glyph-call host --help` for all flags.
 
@@ -87,7 +97,7 @@ go vet ./...
 
 Build a universal macOS binary with `./build.sh --universal`, then run `go run ./cmd/package` to generate ZIPs under `dist/`.
 
-Regenerate the ASCII demo media from dual-pane source GIFs with `GLYPH_CALL_PREVIEW_SRC=/path/to/sources go run ./cmd/makepreviews .`. Outputs stay in character modes only (`call-demo.gif`, `animated-demo.gif`, `video-modes.png`).
+Regenerate the mode demo GIFs from dual-pane source clips with `GLYPH_CALL_PREVIEW_SRC=/path/to/sources go run ./cmd/makepreviews .`. Outputs: `mode-hidden.gif`, `mode-fun-ascii.gif`, `mode-fun-unicode.gif`, `mode-fun-unicode-animated.gif`.
 
 ## Contributing
 

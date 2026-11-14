@@ -1,4 +1,4 @@
-// Command makepreviews renders demo GIFs through Glyph Call character modes.
+// Command makepreviews renders dual-pane call demos through Glyph Call character modes.
 package main
 
 import (
@@ -7,9 +7,9 @@ import (
 	"image/color"
 	"image/draw"
 	"image/gif"
-	"image/png"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/amirhdolati/glyph-call/internal/media"
 	"github.com/amirhdolati/glyph-call/internal/session"
@@ -19,8 +19,10 @@ import (
 )
 
 type modeSpec struct {
+	name  string
 	label string
 	video session.Video
+	scale int
 }
 
 func main() {
@@ -44,9 +46,9 @@ func run() error {
 	outDir := filepath.Join(root, "docs/media")
 
 	modes := []modeSpec{
-		{label: "Hidden", video: session.Video{Mode: "hidden", Style: "ascii", Width: 32, Height: 16, FPS: 8}},
-		{label: "Fun ASCII", video: session.Video{Mode: "fun", Style: "ascii", Color: true, Width: 72, Height: 28, FPS: 12}},
-		{label: "Fun Unicode", video: session.Video{Mode: "fun", Style: "unicode", Color: true, Width: 72, Height: 28, FPS: 12}},
+		{name: "hidden", label: "Hidden", video: session.Video{Mode: "hidden", Style: "ascii", Width: 32, Height: 16, FPS: 8}, scale: 3},
+		{name: "fun-ascii", label: "Fun ASCII", video: session.Video{Mode: "fun", Style: "ascii", Color: true, Width: 56, Height: 24, FPS: 12}, scale: 1},
+		{name: "fun-unicode", label: "Fun Unicode", video: session.Video{Mode: "fun", Style: "unicode", Color: true, Width: 56, Height: 24, FPS: 12}, scale: 1},
 	}
 
 	people, err := loadGIF(srcPeople)
@@ -58,15 +60,25 @@ func run() error {
 		return err
 	}
 
-	ascii := modes[1].video
-	if err := writeModeGIF(people, ascii, filepath.Join(outDir, "call-demo.gif"), 32); err != nil {
+	for _, mode := range modes {
+		path := filepath.Join(outDir, "mode-"+mode.name+".gif")
+		if err := writeCallGIF(people, mode, path, 28); err != nil {
+			return err
+		}
+		fmt.Println("wrote", path)
+	}
+	// Second source through Fun Unicode so both test clips appear as call demos.
+	animPath := filepath.Join(outDir, "mode-fun-unicode-animated.gif")
+	if err := writeCallGIF(anim, modes[2], animPath, 28); err != nil {
 		return err
 	}
-	if err := writeModeGIF(anim, ascii, filepath.Join(outDir, "animated-demo.gif"), 32); err != nil {
-		return err
+	fmt.Println("wrote", animPath)
+
+	// Drop superseded single-pane assets if present.
+	for _, name := range []string{"call-demo.gif", "animated-demo.gif", "video-modes.png"} {
+		_ = os.Remove(filepath.Join(outDir, name))
 	}
-	frame := people[min(12, len(people)-1)]
-	return writeModesPNG(frame, modes, filepath.Join(outDir, "video-modes.png"))
+	return nil
 }
 
 func loadGIF(path string) ([]*image.Paletted, error) {
@@ -82,7 +94,7 @@ func loadGIF(path string) ([]*image.Paletted, error) {
 	return g.Image, nil
 }
 
-func writeModeGIF(frames []*image.Paletted, profile session.Video, path string, maxFrames int) error {
+func writeCallGIF(frames []*image.Paletted, mode modeSpec, path string, maxFrames int) error {
 	if maxFrames > 0 && len(frames) > maxFrames {
 		step := max(1, len(frames)/maxFrames)
 		trimmed := make([]*image.Paletted, 0, maxFrames)
@@ -93,14 +105,26 @@ func writeModeGIF(frames []*image.Paletted, profile session.Video, path string, 
 	}
 	out := &gif.GIF{LoopCount: 0}
 	palette := compactPalette()
-	for _, src := range frames {
-		cellFrame, err := media.MakeFrame(src, profile)
+	var bounds image.Rectangle
+	for i, src := range frames {
+		left, right := splitPanes(src)
+		local, err := media.MakeFrame(left, mode.video)
 		if err != nil {
 			return err
 		}
-		rgba := renderFrame(cellFrame, "")
-		paletted := image.NewPaletted(rgba.Bounds(), palette)
-		draw.FloydSteinberg.Draw(paletted, rgba.Bounds(), rgba, image.Point{})
+		remote, err := media.MakeFrame(right, mode.video)
+		if err != nil {
+			return err
+		}
+		status := fmt.Sprintf("%s  |  DTLS  |  preview demo", mode.label)
+		rgba := renderCall(local, remote, status, mode.scale)
+		if i == 0 {
+			bounds = rgba.Bounds()
+		} else if rgba.Bounds() != bounds {
+			rgba = fitExact(rgba, bounds.Dx(), bounds.Dy())
+		}
+		paletted := image.NewPaletted(bounds, palette)
+		draw.FloydSteinberg.Draw(paletted, bounds, rgba, image.Point{})
 		out.Image = append(out.Image, paletted)
 		out.Delay = append(out.Delay, 12)
 	}
@@ -112,88 +136,53 @@ func writeModeGIF(frames []*image.Paletted, profile session.Video, path string, 
 	return gif.EncodeAll(f, out)
 }
 
-func writeModesPNG(src image.Image, modes []modeSpec, path string) error {
-	const gap = 24
-	const targetH = 360
-	panels := make([]*image.RGBA, len(modes))
-	totalW := gap
-	for i, mode := range modes {
-		frame, err := media.MakeFrame(src, mode.video)
-		if err != nil {
-			return err
-		}
-		panel := renderFrame(frame, mode.label)
-		if mode.video.Mode == "hidden" {
-			panel = nearestScale(panel, 3)
-		}
-		panels[i] = fitHeight(panel, targetH)
-		totalW += panels[i].Bounds().Dx() + gap
-	}
-	canvas := image.NewRGBA(image.Rect(0, 0, totalW, targetH+gap*2))
-	draw.Draw(canvas, canvas.Bounds(), &image.Uniform{C: color.RGBA{12, 14, 18, 255}}, image.Point{}, draw.Src)
-	x := gap
-	for _, panel := range panels {
-		y := gap + (targetH-panel.Bounds().Dy())/2
-		r := image.Rect(x, y, x+panel.Bounds().Dx(), y+panel.Bounds().Dy())
-		draw.Draw(canvas, r, panel, image.Point{}, draw.Src)
-		x += panel.Bounds().Dx() + gap
-	}
-	f, err := os.Create(path)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	enc := png.Encoder{CompressionLevel: png.BestCompression}
-	return enc.Encode(f, canvas)
+func splitPanes(src image.Image) (image.Image, image.Image) {
+	b := src.Bounds()
+	mid := b.Min.X + b.Dx()/2
+	left := image.NewRGBA(image.Rect(0, 0, mid-b.Min.X, b.Dy()))
+	right := image.NewRGBA(image.Rect(0, 0, b.Max.X-mid, b.Dy()))
+	draw.Draw(left, left.Bounds(), src, b.Min, draw.Src)
+	draw.Draw(right, right.Bounds(), src, image.Pt(mid, b.Min.Y), draw.Src)
+	return left, right
 }
 
-func fitHeight(src *image.RGBA, height int) *image.RGBA {
-	b := src.Bounds()
-	if b.Dy() == height {
-		return src
+func renderCall(local, remote media.Frame, status string, scale int) *image.RGBA {
+	if scale < 1 {
+		scale = 1
 	}
-	width := max(1, b.Dx()*height/b.Dy())
-	return nearestSize(src, width, height)
-}
+	face := basicfont.Face7x13
+	cellW, cellH := face.Advance*scale, face.Height*scale
+	gap := 3 * scale
+	pad := 8 * scale
+	titleH := face.Height*scale + 6*scale
+	ruleH := face.Height * scale
+	statusH := face.Height*scale + 8*scale
 
-func nearestScale(src *image.RGBA, factor int) *image.RGBA {
-	b := src.Bounds()
-	return nearestSize(src, b.Dx()*factor, b.Dy()*factor)
-}
-
-func nearestSize(src *image.RGBA, width, height int) *image.RGBA {
-	b := src.Bounds()
+	paneW := max(local.Width, remote.Width) * cellW
+	paneH := max(local.Height, remote.Height) * cellH
+	width := pad*2 + paneW*2 + gap*3
+	height := pad + titleH + ruleH + paneH + statusH + pad
 	dst := image.NewRGBA(image.Rect(0, 0, width, height))
-	for y := 0; y < height; y++ {
-		sy := b.Min.Y + y*b.Dy()/height
-		for x := 0; x < width; x++ {
-			sx := b.Min.X + x*b.Dx()/width
-			dst.SetRGBA(x, y, src.RGBAAt(sx, sy))
-		}
-	}
+	bg := color.RGBA{10, 12, 16, 255}
+	chrome := color.RGBA{160, 170, 180, 255}
+	draw.Draw(dst, dst.Bounds(), &image.Uniform{C: bg}, image.Point{}, draw.Src)
+
+	drawText(dst, face, pad, pad+face.Ascent*scale, "YOU", chrome, scale)
+	drawText(dst, face, pad+paneW+gap*2, pad+face.Ascent*scale, "PEER", chrome, scale)
+
+	ruleY := pad + titleH
+	rule := strings.Repeat("-", max(8, paneW/(face.Advance*scale)))
+	drawText(dst, face, pad, ruleY+face.Ascent*scale, rule+" + "+rule, chrome, scale)
+
+	originY := ruleY + ruleH
+	blitFrame(dst, local, pad, originY, cellW, cellH, scale, face)
+	blitFrame(dst, remote, pad+paneW+gap*2, originY, cellW, cellH, scale, face)
+
+	drawText(dst, face, pad, originY+paneH+6*scale+face.Ascent*scale, status, color.RGBA{120, 200, 140, 255}, scale)
 	return dst
 }
 
-func renderFrame(frame media.Frame, label string) *image.RGBA {
-	face := basicfont.Face7x13
-	cellW, cellH := face.Advance, face.Height
-	padX, padY := 8, 8
-	labelH := 0
-	if label != "" {
-		labelH = cellH + 10
-	}
-	w := frame.Width*cellW + padX*2
-	h := frame.Height*cellH + padY*2 + labelH
-	dst := image.NewRGBA(image.Rect(0, 0, w, h))
-	bg := color.RGBA{10, 12, 16, 255}
-	draw.Draw(dst, dst.Bounds(), &image.Uniform{C: bg}, image.Point{}, draw.Src)
-	d := &font.Drawer{Dst: dst, Face: face}
-	if label != "" {
-		d.Src = image.NewUniform(color.RGBA{200, 210, 220, 255})
-		d.Dot = fixed.P(padX, padY+face.Ascent)
-		d.DrawString(label)
-	}
-	originY := padY + labelH
+func blitFrame(dst *image.RGBA, frame media.Frame, originX, originY, cellW, cellH, scale int, face *basicfont.Face) {
 	for y := 0; y < frame.Height; y++ {
 		for x := 0; x < frame.Width; x++ {
 			c := frame.Cells[y*frame.Width+x]
@@ -201,26 +190,82 @@ func renderFrame(frame media.Frame, label string) *image.RGBA {
 			if rgb == 0 {
 				rgb = 0xffffff
 			}
-			d.Src = image.NewUniform(color.RGBA{uint8(rgb >> 16), uint8(rgb >> 8), uint8(rgb), 255})
-			d.Dot = fixed.P(padX+x*cellW, originY+y*cellH+face.Ascent)
-			d.DrawString(string(c.Rune))
+			fg := color.RGBA{uint8(rgb >> 16), uint8(rgb >> 8), uint8(rgb), 255}
+			drawGlyph(dst, face, originX+x*cellW, originY+y*cellH, string(c.Rune), fg, scale)
 		}
 	}
+}
+
+func drawText(dst *image.RGBA, face *basicfont.Face, x, baseline int, text string, fg color.RGBA, scale int) {
+	if scale == 1 {
+		d := &font.Drawer{Dst: dst, Src: image.NewUniform(fg), Face: face, Dot: fixed.P(x, baseline)}
+		d.DrawString(text)
+		return
+	}
+	// Draw into a 1x buffer then nearest-scale each glyph row for Hidden demos.
+	tmp := image.NewRGBA(image.Rect(0, 0, face.Advance*len([]rune(text))+2, face.Height+2))
+	draw.Draw(tmp, tmp.Bounds(), &image.Uniform{C: color.RGBA{10, 12, 16, 255}}, image.Point{}, draw.Src)
+	d := &font.Drawer{Dst: tmp, Src: image.NewUniform(fg), Face: face, Dot: fixed.P(0, face.Ascent)}
+	d.DrawString(text)
+	for py := 0; py < face.Height; py++ {
+		for px := 0; px < tmp.Bounds().Dx(); px++ {
+			_, _, _, a := tmp.At(px, py).RGBA()
+			if a == 0 {
+				continue
+			}
+			for dy := 0; dy < scale; dy++ {
+				for dx := 0; dx < scale; dx++ {
+					dst.Set(x+px*scale+dx, baseline-face.Ascent*scale+py*scale+dy, fg)
+				}
+			}
+		}
+	}
+}
+
+func drawGlyph(dst *image.RGBA, face *basicfont.Face, x, y int, text string, fg color.RGBA, scale int) {
+	if scale == 1 {
+		d := &font.Drawer{Dst: dst, Src: image.NewUniform(fg), Face: face, Dot: fixed.P(x, y+face.Ascent)}
+		d.DrawString(text)
+		return
+	}
+	tmp := image.NewRGBA(image.Rect(0, 0, face.Advance+2, face.Height+2))
+	draw.Draw(tmp, tmp.Bounds(), &image.Uniform{C: color.RGBA{10, 12, 16, 255}}, image.Point{}, draw.Src)
+	d := &font.Drawer{Dst: tmp, Src: image.NewUniform(fg), Face: face, Dot: fixed.P(0, face.Ascent)}
+	d.DrawString(text)
+	for py := 0; py < face.Height; py++ {
+		for px := 0; px < face.Advance; px++ {
+			_, _, _, a := tmp.At(px, py).RGBA()
+			if a == 0 {
+				continue
+			}
+			for dy := 0; dy < scale; dy++ {
+				for dx := 0; dx < scale; dx++ {
+					dst.Set(x+px*scale+dx, y+py*scale+dy, fg)
+				}
+			}
+		}
+	}
+}
+
+func fitExact(src *image.RGBA, width, height int) *image.RGBA {
+	b := src.Bounds()
+	if b.Dx() == width && b.Dy() == height {
+		return src
+	}
+	dst := image.NewRGBA(image.Rect(0, 0, width, height))
+	draw.Draw(dst, dst.Bounds(), &image.Uniform{C: color.RGBA{10, 12, 16, 255}}, image.Point{}, draw.Src)
+	draw.Draw(dst, image.Rect(0, 0, min(width, b.Dx()), min(height, b.Dy())), src, b.Min, draw.Src)
 	return dst
 }
 
 func compactPalette() color.Palette {
 	palette := color.Palette{color.RGBA{10, 12, 16, 255}, color.White}
-	for _, step := range []int{0, 64, 128, 192, 255} {
-		for r := 0; r < 256; r += 64 {
-			for g := 0; g < 256; g += 64 {
-				for b := 0; b < 256; b += 64 {
-					palette = append(palette, color.RGBA{uint8(r), uint8(g), uint8(b), 255})
-				}
+	for r := 0; r < 256; r += 51 {
+		for g := 0; g < 256; g += 51 {
+			for b := 0; b < 256; b += 51 {
+				palette = append(palette, color.RGBA{uint8(r), uint8(g), uint8(b), 255})
 			}
 		}
-		_ = step
-		break
 	}
 	return palette
 }
