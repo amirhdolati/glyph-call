@@ -32,7 +32,7 @@ Choose **Host a call** to generate an invite code. Share it privately and have t
 ./bin/glyph-call connect
 ```
 
-[راهنمای فارسی](docs/quickstart-fa.md) · [Contributing](CONTRIBUTING.md) · [Support](#support)
+[Contributing](CONTRIBUTING.md) · [Support](#support)
 
 ## Video and audio
 
