@@ -1,5 +1,7 @@
 # Glyph Call
 
+[![CI](https://github.com/amirhdolati/glyph-call/actions/workflows/ci.yml/badge.svg)](https://github.com/amirhdolati/glyph-call/actions/workflows/ci.yml)
+
 Peer-to-peer video and voice calls from the terminal. Video can appear as ASCII, colored Unicode art, or a native terminal image.
 
 ![Two participants shown first as video and then as colored Braille in Glyph Call](docs/media/call-demo.gif)
@@ -8,7 +10,7 @@ Peer-to-peer video and voice calls from the terminal. Video can appear as ASCII,
 
 The demo GIF is licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). It combines cropped, shortened and recolored excerpts from [Emmanuella Oluwapelumia Aina’s clip](https://commons.wikimedia.org/wiki/File:Video-output-0BDB93DD-E9BC-41A8-8839-004A1CF0CB50-1.webm) by Aminw 21 and [Adeola Alabi’s clip](https://commons.wikimedia.org/wiki/File:Video-output-2DBE5F83-C0E9-4298-8D7F-5FBB8D8230BD-3.webm) by Aminwa 21, both from Wikimedia Commons.
 
-## Get started
+## Quick start
 
 Install Go 1.26 or newer. Camera and microphone capture require macOS 14 or newer and Apple's Command Line Tools (`xcode-select --install`).
 
@@ -31,8 +33,6 @@ Choose **Host a call** to generate an invite code. Share it privately and have t
 # Enter the invite code at the prompt.
 ./bin/glyph-call connect
 ```
-
-[Contributing](CONTRIBUTING.md) · [Support](#support)
 
 ## Video and audio
 
@@ -85,6 +85,10 @@ go vet ./...
 | `internal/media`, `internal/terminal`, `internal/devices` | Media encoding, terminal output, and native capture |
 
 Build a universal macOS binary with `./build.sh --universal`, then run `go run ./cmd/package` to generate ZIPs under `dist/`.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, Conventional Commits, and English-only documentation rules.
 
 ## Support
 
