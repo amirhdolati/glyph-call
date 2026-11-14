@@ -4,6 +4,12 @@
 
 Peer-to-peer video and voice calls from the terminal. Video can appear as ASCII, colored Unicode art, or a native terminal image.
 
+![Two participants shown first as video and then as colored Braille in Glyph Call](docs/media/call-demo.gif)
+
+*Prerecorded demo with two real participants. The Graphic segment places cropped video frames into the layout. The Fun segment uses the app’s Braille renderer with brighter midtones.*
+
+The demo GIF is licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). It combines cropped, shortened and recolored excerpts from [Emmanuella Oluwapelumia Aina’s clip](https://commons.wikimedia.org/wiki/File:Video-output-0BDB93DD-E9BC-41A8-8839-004A1CF0CB50-1.webm) by Aminw 21 and [Adeola Alabi’s clip](https://commons.wikimedia.org/wiki/File:Video-output-2DBE5F83-C0E9-4298-8D7F-5FBB8D8230BD-3.webm) by Aminwa 21, both from Wikimedia Commons.
+
 ## Quick start
 
 Install Go 1.26 or newer. Camera and microphone capture require macOS 14 or newer and Apple's Command Line Tools (`xcode-select --install`).
@@ -36,23 +42,7 @@ Choose **Host a call** to generate an invite code. Share it privately and have t
 | **Fun** | Colored Braille by default. Use `--fun-style ascii` for colored ASCII. |
 | **Graphic** | Camera images in compatible terminals such as Kitty and iTerm2. Each receiver falls back to character art if image support is unavailable. |
 
-The clips below are the same dual-pane call preview through each character mode (YOU | PEER). Source footage is converted with `media.MakeFrame`; the camera image itself is not shown.
-
-**Hidden**
-
-![Call preview in Hidden mode](docs/media/mode-hidden.gif)
-
-**Fun ASCII** (`--mode fun --fun-style ascii`)
-
-![Call preview in Fun ASCII mode](docs/media/mode-fun-ascii.gif)
-
-**Fun Unicode** (`--mode fun --fun-style unicode`)
-
-![Call preview in Fun Unicode mode](docs/media/mode-fun-unicode.gif)
-
-**Fun Unicode** with the animated-character test clip:
-
-![Animated call preview in Fun Unicode mode](docs/media/mode-fun-unicode-animated.gif)
+![Four previews of the same synthetic scene in Hidden, Fun ASCII, Fun Unicode, and Graphic modes](docs/media/video-modes.png)
 
 Use `--voice real`, `robot`, `8bit`, `radio`, or `off`. The host requests a voice mode and quality, and the peers negotiate what they support. Use `--no-camera` or `--no-audio` to disable a local device. Run `./bin/glyph-call host --help` for all flags.
 
@@ -89,15 +79,12 @@ go vet ./...
 | Path | Responsibility |
 | --- | --- |
 | `cmd/glyph-call` | CLI entry point |
-| `cmd/makepreviews` | ASCII demo GIF/PNG generation |
 | `cmd/package` | ZIP packaging |
 | `internal/app`, `internal/session` | Call flow and capability negotiation |
 | `internal/connection`, `internal/signaling` | WebRTC and invite exchange |
 | `internal/media`, `internal/terminal`, `internal/devices` | Media encoding, terminal output, and native capture |
 
 Build a universal macOS binary with `./build.sh --universal`, then run `go run ./cmd/package` to generate ZIPs under `dist/`.
-
-Regenerate the mode demo GIFs from dual-pane source clips with `GLYPH_CALL_PREVIEW_SRC=/path/to/sources go run ./cmd/makepreviews .`. Outputs: `mode-hidden.gif`, `mode-fun-ascii.gif`, `mode-fun-unicode.gif`, `mode-fun-unicode-animated.gif`.
 
 ## Contributing
 

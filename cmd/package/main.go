@@ -52,16 +52,7 @@ func run() error {
 	if err := os.MkdirAll("dist", 0755); err != nil {
 		return err
 	}
-	common := []string{
-		"README.md",
-		"docs/media/mode-hidden.gif",
-		"docs/media/mode-fun-ascii.gif",
-		"docs/media/mode-fun-unicode.gif",
-		"docs/media/mode-fun-unicode-animated.gif",
-		"docs/media/donation-tron.png",
-		"Start.command",
-		"Install.command",
-	}
+	common := []string{"README.md", "docs/media/call-demo.gif", "docs/media/video-modes.png", "docs/media/donation-tron.png", "Start.command", "Install.command"}
 	binary := append(append([]string{}, common...), "bin/glyph-call")
 	architecture := runtime.GOARCH
 	if binary, err := macho.OpenFat("bin/glyph-call"); err == nil {
