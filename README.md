@@ -4,9 +4,9 @@
 
 Peer-to-peer video and voice calls from the terminal. Video can appear as ASCII, colored Unicode art, or a native terminal image.
 
-![24-second showcase of Graphic, Hidden, colored ASCII and Unicode modes with real people and animated test scenes](docs/media/call-demo.gif)
+![Two participants shown first as video and then as colored Braille in Glyph Call](docs/media/call-demo.gif)
 
-*A 24-second prerecorded showcase with six chapters: Graphic, Hidden, Fun ASCII, Fun Unicode, then animated gradients, a moving sphere and waves in both Fun styles. Character frames come from the app’s renderer (with brighter midtones for the Fun portraits); the presentation adds chapter labels and a timeline. Graphic places cropped footage into the presentation. This is a visual demonstration, not a recording of a live connection. GIF previews have no audio.*
+*Prerecorded demo with two real participants. The Graphic segment places cropped video frames into the layout. The Fun segment uses the app’s Braille renderer with brighter midtones.*
 
 The demo GIF is licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). It combines cropped, shortened and recolored excerpts from [Emmanuella Oluwapelumia Aina’s clip](https://commons.wikimedia.org/wiki/File:Video-output-0BDB93DD-E9BC-41A8-8839-004A1CF0CB50-1.webm) by Aminw 21 and [Adeola Alabi’s clip](https://commons.wikimedia.org/wiki/File:Video-output-2DBE5F83-C0E9-4298-8D7F-5FBB8D8230BD-3.webm) by Aminwa 21, both from Wikimedia Commons.
 
