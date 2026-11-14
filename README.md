@@ -4,22 +4,9 @@
 
 Peer-to-peer video and voice calls from the terminal. Video can appear as ASCII, colored Unicode art, or a native terminal image.
 
-![Two participants shown first as video and then as colored Braille in Glyph Call](docs/media/call-demo.gif)
+![Two real people talking in a dual-pane call layout](docs/media/call-demo.gif)
 
-*Prerecorded demo with two real participants. The Graphic segment places cropped video frames into the layout. The Fun segment uses the app’s Braille renderer with brighter midtones.*
-
-The demo GIF is licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). It combines cropped, shortened and recolored excerpts from [Emmanuella Oluwapelumia Aina’s clip](https://commons.wikimedia.org/wiki/File:Video-output-0BDB93DD-E9BC-41A8-8839-004A1CF0CB50-1.webm) by Aminw 21 and [Adeola Alabi’s clip](https://commons.wikimedia.org/wiki/File:Video-output-2DBE5F83-C0E9-4298-8D7F-5FBB8D8230BD-3.webm) by Aminwa 21, both from Wikimedia Commons.
-
-### Test footage
-
-Use these dual-pane clips as camera stand-ins when recording mode demos or checking YOU | PEER layout:
-
-| Scenario | File |
-| --- | --- |
-| Two animated characters talking | [`docs/media/test-animated-characters.mp4`](docs/media/test-animated-characters.mp4) |
-| Two real people talking | [`docs/media/test-two-people.mp4`](docs/media/test-two-people.mp4) |
-
-Play each clip in a virtual camera (or as a full-screen source), then run `host` / `connect` without `--synthetic` so Glyph Call encodes the live frames in Hidden, Fun, or Graphic mode.
+*Test footage: two real participants in a YOU | PEER style layout.*
 
 ## Quick start
 
@@ -53,7 +40,7 @@ Choose **Host a call** to generate an invite code. Share it privately and have t
 | **Fun** | Colored Braille by default. Use `--fun-style ascii` for colored ASCII. |
 | **Graphic** | Camera images in compatible terminals such as Kitty and iTerm2. Each receiver falls back to character art if image support is unavailable. |
 
-![Four previews of the same synthetic scene in Hidden, Fun ASCII, Fun Unicode, and Graphic modes](docs/media/video-modes.png)
+![Two animated characters talking in a dual-pane call layout](docs/media/animated-demo.gif)
 
 Use `--voice real`, `robot`, `8bit`, `radio`, or `off`. The host requests a voice mode and quality, and the peers negotiate what they support. Use `--no-camera` or `--no-audio` to disable a local device. Run `./bin/glyph-call host --help` for all flags.
 
