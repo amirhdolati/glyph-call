@@ -10,6 +10,17 @@ Peer-to-peer video and voice calls from the terminal. Video can appear as ASCII,
 
 The demo GIF is licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). It combines cropped, shortened and recolored excerpts from [Emmanuella Oluwapelumia Aina’s clip](https://commons.wikimedia.org/wiki/File:Video-output-0BDB93DD-E9BC-41A8-8839-004A1CF0CB50-1.webm) by Aminw 21 and [Adeola Alabi’s clip](https://commons.wikimedia.org/wiki/File:Video-output-2DBE5F83-C0E9-4298-8D7F-5FBB8D8230BD-3.webm) by Aminwa 21, both from Wikimedia Commons.
 
+### Test footage
+
+Use these dual-pane clips as camera stand-ins when recording mode demos or checking YOU | PEER layout:
+
+| Scenario | File |
+| --- | --- |
+| Two animated characters talking | [`docs/media/test-animated-characters.mp4`](docs/media/test-animated-characters.mp4) |
+| Two real people talking | [`docs/media/test-two-people.mp4`](docs/media/test-two-people.mp4) |
+
+Play each clip in a virtual camera (or as a full-screen source), then run `host` / `connect` without `--synthetic` so Glyph Call encodes the live frames in Hidden, Fun, or Graphic mode.
+
 ## Quick start
 
 Install Go 1.26 or newer. Camera and microphone capture require macOS 14 or newer and Apple's Command Line Tools (`xcode-select --install`).
