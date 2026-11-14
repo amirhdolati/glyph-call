@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>CFBundleIdentifier</key><string>local.ascii-call.go</string>
+<key>CFBundleName</key><string>Glyph Call</string>
+<key>NSCameraUsageDescription</key><string>Show your camera to the person you approve in an Glyph Call.</string>
+<key>NSMicrophoneUsageDescription</key><string>Send your selected voice mode to the person you approve.</string>
+<key>NSCameraUseContinuityCameraDeviceType</key><true/>
+</dict></plist>

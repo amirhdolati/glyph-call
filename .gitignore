@@ -1,0 +1,16 @@
+/bin/
+/dist/
+/.build/
+/.cache/
+/artifacts/
+.DS_Store
+*.test
+*.cover
+coverage.out
+/offer.json
+/answer.json
+/go-offer.json
+/go-answer.json
+*.signal.json
+.env
+.env.*
