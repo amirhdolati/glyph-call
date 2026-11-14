@@ -48,7 +48,7 @@ Use `--voice real`, `robot`, `8bit`, `radio`, or `off`. The host requests a voic
 
 The Go CLI and synthetic preview also work on Linux. Native camera and microphone capture are implemented for macOS.
 
-## How a call connects
+## Architecture
 
 ```mermaid
 sequenceDiagram
